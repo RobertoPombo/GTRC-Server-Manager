@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GTRC_WPF", "..\GTRC-WPF\GTR
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GTRC_WPF_UserControls", "..\GTRC-WPF-UserControls\GTRC_WPF_UserControls.csproj", "{67BA44A7-1911-45B6-ACF9-DBB702B09123}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GTRC_Database_Client", "..\GTRC-Database-Client\GTRC_Database_Client.csproj", "{224BDAB9-2362-43DF-A508-7E8FAD7E4979}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{67BA44A7-1911-45B6-ACF9-DBB702B09123}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{67BA44A7-1911-45B6-ACF9-DBB702B09123}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{67BA44A7-1911-45B6-ACF9-DBB702B09123}.Release|Any CPU.Build.0 = Release|Any CPU
+		{224BDAB9-2362-43DF-A508-7E8FAD7E4979}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{224BDAB9-2362-43DF-A508-7E8FAD7E4979}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{224BDAB9-2362-43DF-A508-7E8FAD7E4979}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{224BDAB9-2362-43DF-A508-7E8FAD7E4979}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

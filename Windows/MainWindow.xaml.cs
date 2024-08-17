@@ -7,8 +7,8 @@ using GTRC_Basics;
 using GTRC_Database_Client.Responses;
 using GTRC_Database_Client;
 using GTRC_WPF;
-using GTRC_WPF_UserControls.Scripts;
 using GTRC_WPF_UserControls.ViewModels;
+using GTRC_WPF_UserControls.Scripts;
 
 namespace GTRC_Server_Bot.Windows
 {
@@ -19,7 +19,7 @@ namespace GTRC_Server_Bot.Windows
             if (!Directory.Exists(GlobalValues.DataDirectory)) { Directory.CreateDirectory(GlobalValues.DataDirectory); }
             GlobalWinValues.SetCultureInfo();
             UpdateThemeColors();
-            DiscordCommandsBase.DiscordBot.EnsureIsRunning();
+            DiscordCommands.DiscordBot.EnsureIsRunning();
             InitializeComponent();
             Width = GlobalWinValues.screenWidth * 0.5;
             Height = GlobalWinValues.screenHeight * 0.8;
@@ -35,7 +35,7 @@ namespace GTRC_Server_Bot.Windows
 
         public async Task UpdateThemeColorsAsync()
         {
-            DbApiListResponse<GTRC_Basics.Models.Color> response = await DbApi.DynConnection.Color.GetAll();
+            DbApiListResponse<GTRC_Basics.Models.Color> response = await DbApi.DynCon.Color.GetAll();
             List<GTRC_Basics.Models.Color> colors = response.List;
             for (int colorNr = 0; colorNr < colors.Count; colorNr++)
             {
