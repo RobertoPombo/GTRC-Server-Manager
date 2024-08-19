@@ -13,7 +13,7 @@
             <Button Command="{Binding RestoreJsonCmd}"
                     Style="{StaticResource ResButtonStyle}" Margin="1,5"/>
         </StackPanel>
-        <Label Content="Report New Registrations" Margin="10,0,5,0"
+        <Label Content="Check Database For New Registrations" Margin="10,0,5,0"
                Style="{StaticResource LabelStyle}" HorizontalAlignment="Center"/>
         <StackPanel Orientation="Horizontal" Margin="10,5">
             <CheckBox IsChecked="{Binding IsActive}" Margin="5,0,0,0"

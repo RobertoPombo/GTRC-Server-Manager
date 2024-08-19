@@ -21,7 +21,7 @@ namespace GTRC_Server_Bot.Windows
             UpdateThemeColors();
             DiscordCommands.DiscordBot.EnsureIsRunning();
             InitializeComponent();
-            Width = GlobalWinValues.screenWidth * 0.28;
+            Width = GlobalWinValues.screenWidth * 0.32;
             Height = GlobalWinValues.screenHeight * 0.135;
             Left = GlobalWinValues.screenWidth * 0.005;
             Top = GlobalWinValues.screenWidth * 0.01 + GlobalWinValues.screenHeight * 0.07;
