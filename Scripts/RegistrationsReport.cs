@@ -54,7 +54,6 @@ namespace GTRC_Server_Bot.Scripts
 
         private void LoadListEntries()
         {
-            if (!Directory.Exists(GlobalValues.DataDirectory)) { Directory.CreateDirectory(GlobalValues.DataDirectory); }
             if (!File.Exists(path)) { File.WriteAllText(path, JsonConvert.SerializeObject(new List<Entry>(), Formatting.Indented), Encoding.Unicode); }
             try
             {

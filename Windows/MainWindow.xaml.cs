@@ -16,7 +16,7 @@ namespace GTRC_Server_Bot.Windows
     {
         public MainWindow()
         {
-            if (!Directory.Exists(GlobalValues.DataDirectory)) { Directory.CreateDirectory(GlobalValues.DataDirectory); }
+            GTRC_Basics.Scripts.CreateDirectories();
             GlobalWinValues.SetCultureInfo();
             UpdateThemeColors();
             DiscordCommands.DiscordBot.EnsureIsRunning();

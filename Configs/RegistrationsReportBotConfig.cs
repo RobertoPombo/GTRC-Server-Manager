@@ -8,7 +8,7 @@ namespace GTRC_Server_Bot.Configs
 {
     public class RegistrationsReportBotConfig
     {
-        private static readonly string path = GlobalValues.DataDirectory + "config registrations report bot.json";
+        private static readonly string path = GlobalValues.ConfigDirectory + "config registrations report bot.json";
 
         private int intervallMin = 0;
 
@@ -23,7 +23,6 @@ namespace GTRC_Server_Bot.Configs
         public static RegistrationsReportBotConfig LoadJson()
         {
             RegistrationsReportBotConfig? registrationsReportBotConfig = null;
-            if (!Directory.Exists(GlobalValues.DataDirectory)) { Directory.CreateDirectory(GlobalValues.DataDirectory); }
             if (!File.Exists(path)) { File.WriteAllText(path, JsonConvert.SerializeObject(new RegistrationsReportBotConfig(), Formatting.Indented), Encoding.Unicode); }
             try
             {
