@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\GTRC-Basics\GTRC_Basics.csproj" />
     <ProjectReference Include="..\GTRC-Database-Client\GTRC_Database_Client.csproj" />
+    <ProjectReference Include="..\GTRC-Server-Basics\GTRC_Server_Basics.csproj" />
     <ProjectReference Include="..\GTRC-WPF-UserControls\GTRC_WPF_UserControls.csproj" />
     <ProjectReference Include="..\GTRC-WPF\GTRC_WPF.csproj" />
   </ItemGroup>
@@ -25,11 +26,6 @@
     <Resource Include="icon.ico">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="ViewModels\" />
-    <Folder Include="Scripts\" />
   </ItemGroup>
 
 </Project>

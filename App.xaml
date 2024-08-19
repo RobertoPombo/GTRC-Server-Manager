@@ -31,6 +31,9 @@
             <DataTemplate DataType="{x:Type viewModelUC:DiscordBotConfigVM}">
                 <viewUC:DiscordBotConfigView/>
             </DataTemplate>
+            <DataTemplate DataType="{x:Type viewModel:RegistrationsReportBotConfigVM}">
+                <view:RegistrationsReportBotConfigView/>
+            </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
