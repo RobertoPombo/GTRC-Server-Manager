@@ -2,9 +2,9 @@
 
 namespace GTRC_Server_Bot.Windows
 {
-    public partial class RegistrationsReportBotConfigView : UserControl
+    public partial class ReloadDatabaseBotConfigView : UserControl
     {
-        public RegistrationsReportBotConfigView()
+        public ReloadDatabaseBotConfigView()
         {
             InitializeComponent();
         }

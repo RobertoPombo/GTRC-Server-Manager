@@ -10,11 +10,11 @@ using GTRC_WPF;
 
 namespace GTRC_Server_Bot.ViewModels
 {
-    public class RegistrationsReportBotConfigVM : ObservableObject
+    public class ReloadDatabaseBotConfigVM : ObservableObject
     {
         private static readonly Random random = new();
 
-        private RegistrationsReportBotConfig selected = new();
+        private ReloadDatabaseBotConfig selected = new();
         private RegistrationsReport registrationsReport = new();
         private StateBackgroundWorker state = StateBackgroundWorker.Off;
         private int timeRemaining = 0;
@@ -22,16 +22,16 @@ namespace GTRC_Server_Bot.ViewModels
         private int waitQueueCount = 0;
         private BackgroundWorker backgroundWorker = new() { WorkerSupportsCancellation = true };
 
-        public RegistrationsReportBotConfigVM()
+        public ReloadDatabaseBotConfigVM()
         {
             RestoreJsonCmd = new UICmd((o) => RestoreJson());
-            SaveJsonCmd = new UICmd((o) => RegistrationsReportBotConfig.SaveJson(Selected));
-            SyncronizeRegistrationsCmd = new UICmd((o) => TriggerSyncronizeRegistrations());
+            SaveJsonCmd = new UICmd((o) => ReloadDatabaseBotConfig.SaveJson(Selected));
+            ReloadDatabaseCmd = new UICmd((o) => TriggerReloadDatabase());
             RestoreJson();
             GlobalWinValues.StateBackgroundWorkerColorsUpdated += RefreshStateColor;
         }
 
-        public RegistrationsReportBotConfig Selected
+        public ReloadDatabaseBotConfig Selected
         {
             get { return selected; }
             set
@@ -103,7 +103,7 @@ namespace GTRC_Server_Bot.ViewModels
             set { RaisePropertyChanged(); }
         }
 
-        public void LoopSyncronizeRegistrations(object? sender, DoWorkEventArgs e)
+        public void LoopReloadDatabase(object? sender, DoWorkEventArgs e)
         {
             while (true)
             {
@@ -114,19 +114,19 @@ namespace GTRC_Server_Bot.ViewModels
                     TimeRemaining = string.Empty;
                     if (timeRemaining == 0)
                     {
-                        TriggerSyncronizeRegistrations();
+                        TriggerReloadDatabase();
                         timeRemaining = (ushort)(IntervallMin * 60);
                     }
                 }
             }
         }
 
-        public void TriggerSyncronizeRegistrations()
+        public void TriggerReloadDatabase()
         {
-            new Thread(ThreadSyncronizeRegistrations).Start();
+            new Thread(ThreadReloadDatabase).Start();
         }
 
-        public async void ThreadSyncronizeRegistrations()
+        public async void ThreadReloadDatabase()
         {
             WaitQueueCount++;
             while (IsRunning) { Thread.Sleep(200 + random.Next(100)); }
@@ -155,17 +155,17 @@ namespace GTRC_Server_Bot.ViewModels
 
         public void RestoreJson()
         {
-            Selected = RegistrationsReportBotConfig.LoadJson();
+            Selected = ReloadDatabaseBotConfig.LoadJson();
             SetState();
             if (!backgroundWorker.IsBusy)
             {
-                backgroundWorker.DoWork += LoopSyncronizeRegistrations;
+                backgroundWorker.DoWork += LoopReloadDatabase;
                 backgroundWorker.RunWorkerAsync();
             }
         }
 
         public UICmd RestoreJsonCmd { get; set; }
         public UICmd SaveJsonCmd { get; set; }
-        public UICmd SyncronizeRegistrationsCmd { get; set; }
+        public UICmd ReloadDatabaseCmd { get; set; }
     }
 }

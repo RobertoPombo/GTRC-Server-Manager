@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="GTRC_Server_Bot.Windows.RegistrationsReportBotConfigView"
+﻿<UserControl x:Class="GTRC_Server_Bot.Windows.ReloadDatabaseBotConfigView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -13,13 +13,13 @@
             <Button Command="{Binding RestoreJsonCmd}"
                     Style="{StaticResource ResButtonStyle}" Margin="1,5"/>
         </StackPanel>
-        <Label Content="Check Database For New Registrations" Margin="10,0,5,0"
+        <Label Content="Check Database For New Data" Margin="10,0,5,0"
                Style="{StaticResource LabelStyle}" HorizontalAlignment="Center"/>
         <StackPanel Orientation="Horizontal" Margin="10,5">
             <CheckBox IsChecked="{Binding IsActive}" Margin="5,0,0,0"
                       Style="{StaticResource SwitchCheckBoxStyle}"/>
-            <Button Command="{Binding SyncronizeRegistrationsCmd}"
-                    Style="{StaticResource ExpButtonStyle}" Margin="5"/>
+            <Button Command="{Binding ReloadDatabaseCmd}"
+                    Style="{StaticResource ImpButtonStyle}" Margin="5"/>
             <Label Foreground="{Binding StateColor}"
                    Style="{StaticResource StatusLightLabelStyle}" Margin="0"/>
             <Label Content="{Binding TimeRemaining}"

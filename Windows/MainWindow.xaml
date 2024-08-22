@@ -23,7 +23,7 @@
         </Grid.RowDefinitions>
         <ScrollViewer Margin="15" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
             <StackPanel Grid.Row="0" Orientation="Vertical" Margin="10,0">
-                <UserControl Content="{Binding RegistrationsReportBotConfigVM}"/>
+                <UserControl Content="{Binding ReloadDatabaseBotConfigVM}"/>
                 <!--UserControl Content="{Binding ServerBotConfigVM}"/-->
                 <Canvas Width="Auto" Height="1" Background="{DynamicResource color3}" Margin="10"/>
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0">
