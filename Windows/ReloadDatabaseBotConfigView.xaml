@@ -24,9 +24,10 @@
                    Style="{StaticResource StatusLightLabelStyle}" Margin="0"/>
             <Label Content="{Binding TimeRemaining}"
                    Style="{StaticResource LabelStyle}" Margin="10,0"/>
-            <TextBox Text="{Binding IntervallMin}"
+            <TextBox Text="{Binding IntervallMin, UpdateSourceTrigger=PropertyChanged}"
                      Style="{StaticResource TextBoxStyle}" Margin="0"
-                     Width="Auto" MinWidth="30" HorizontalContentAlignment="Right" Padding="5,5,1,3"/>
+                     Width="Auto" MinWidth="30" 
+                     HorizontalContentAlignment="Right" Padding="5,5,1,3"/>
             <Label Content="min" Style="{StaticResource LabelStyle}" Margin="1,0"/>
         </StackPanel>
     </StackPanel>
