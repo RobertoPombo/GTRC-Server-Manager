@@ -6,9 +6,9 @@ using GTRC_Basics;
 
 namespace GTRC_Server_Bot.Configs
 {
-    public class ReloadDatabaseBotConfig
+    public class DbChangeDetectionConfig
     {
-        private static readonly string path = GlobalValues.ConfigDirectory + "config reload database bot.json";
+        private static readonly string path = GlobalValues.ConfigDirectory + "config database change detection.json";
 
         private int intervallMin = 0;
 
@@ -20,21 +20,21 @@ namespace GTRC_Server_Bot.Configs
 
         public bool IsActive { get; set; } = false;
 
-        public static ReloadDatabaseBotConfig LoadJson()
+        public static DbChangeDetectionConfig LoadJson()
         {
-            ReloadDatabaseBotConfig? registrationsReportBotConfig = null;
-            if (!File.Exists(path)) { File.WriteAllText(path, JsonConvert.SerializeObject(new ReloadDatabaseBotConfig(), Formatting.Indented), Encoding.Unicode); }
+            DbChangeDetectionConfig? registrationsReportBotConfig = null;
+            if (!File.Exists(path)) { File.WriteAllText(path, JsonConvert.SerializeObject(new DbChangeDetectionConfig(), Formatting.Indented), Encoding.Unicode); }
             try
             {
-                registrationsReportBotConfig = JsonConvert.DeserializeObject<ReloadDatabaseBotConfig>(File.ReadAllText(path, Encoding.Unicode));
+                registrationsReportBotConfig = JsonConvert.DeserializeObject<DbChangeDetectionConfig>(File.ReadAllText(path, Encoding.Unicode));
                 GlobalValues.CurrentLogText = "Reload database bot settings restored.";
             }
             catch { GlobalValues.CurrentLogText = "Restore reload database bot settings failed!"; }
-            registrationsReportBotConfig ??= new ReloadDatabaseBotConfig();
+            registrationsReportBotConfig ??= new DbChangeDetectionConfig();
             return registrationsReportBotConfig;
         }
 
-        public static void SaveJson(ReloadDatabaseBotConfig registrationsReportBotConfig)
+        public static void SaveJson(DbChangeDetectionConfig registrationsReportBotConfig)
         {
             string text = JsonConvert.SerializeObject(registrationsReportBotConfig, Formatting.Indented);
             File.WriteAllText(path, text, Encoding.Unicode);

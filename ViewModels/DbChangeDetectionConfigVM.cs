@@ -10,27 +10,27 @@ using GTRC_WPF;
 
 namespace GTRC_Server_Bot.ViewModels
 {
-    public class ReloadDatabaseBotConfigVM : ObservableObject
+    public class DbChangeDetectionConfigVM : ObservableObject
     {
         private static readonly Random random = new();
 
-        private ReloadDatabaseBotConfig selected = new();
+        private DbChangeDetectionConfig selected = new();
         private StateBackgroundWorker state = StateBackgroundWorker.Off;
         private int timeRemainingSec = 0;
         private bool isRunning = false;
         private int waitQueueCount = 0;
         private BackgroundWorker backgroundWorker = new() { WorkerSupportsCancellation = true };
 
-        public ReloadDatabaseBotConfigVM()
+        public DbChangeDetectionConfigVM()
         {
             RestoreJsonCmd = new UICmd((o) => RestoreJson());
-            SaveJsonCmd = new UICmd((o) => ReloadDatabaseBotConfig.SaveJson(Selected));
+            SaveJsonCmd = new UICmd((o) => DbChangeDetectionConfig.SaveJson(Selected));
             ReloadDatabaseCmd = new UICmd((o) => TriggerReloadDatabase());
             RestoreJson();
             GlobalWinValues.StateBackgroundWorkerColorsUpdated += RefreshStateColor;
         }
 
-        public ReloadDatabaseBotConfig Selected
+        public DbChangeDetectionConfig Selected
         {
             get { return selected; }
             set
@@ -149,7 +149,7 @@ namespace GTRC_Server_Bot.ViewModels
 
         public void RestoreJson()
         {
-            Selected = ReloadDatabaseBotConfig.LoadJson();
+            Selected = DbChangeDetectionConfig.LoadJson();
             SetState();
             if (!backgroundWorker.IsBusy)
             {

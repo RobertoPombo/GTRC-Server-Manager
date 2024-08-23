@@ -2,9 +2,9 @@
 
 namespace GTRC_Server_Bot.Windows
 {
-    public partial class ReloadDatabaseBotConfigView : UserControl
+    public partial class DbChangeDetectionConfigView : UserControl
     {
-        public ReloadDatabaseBotConfigView()
+        public DbChangeDetectionConfigView()
         {
             InitializeComponent();
         }

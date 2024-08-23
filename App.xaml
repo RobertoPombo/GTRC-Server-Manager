@@ -31,8 +31,8 @@
             <DataTemplate DataType="{x:Type viewModelUC:DiscordBotConfigVM}">
                 <viewUC:DiscordBotConfigView/>
             </DataTemplate>
-            <DataTemplate DataType="{x:Type viewModel:ReloadDatabaseBotConfigVM}">
-                <view:ReloadDatabaseBotConfigView/>
+            <DataTemplate DataType="{x:Type viewModel:DbChangeDetectionConfigVM}">
+                <view:DbChangeDetectionConfigView/>
             </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>

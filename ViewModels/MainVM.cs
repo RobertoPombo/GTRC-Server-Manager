@@ -8,20 +8,20 @@ namespace GTRC_Server_Bot.ViewModels
 
         private DbApiConnectionConfigVM? dbApiConnectionConfigVM;
         private DiscordBotConfigVM? discordBotConfigVM;
-        private ReloadDatabaseBotConfigVM? reloadDatabaseBotConfigVM;
+        private DbChangeDetectionConfigVM? dbChangeDetectionConfigVM;
 
         public MainVM()
         {
             Instance = this;
             DbApiConnectionConfigVM = new DbApiConnectionConfigVM();
             DiscordBotConfigVM = new DiscordBotConfigVM();
-            ReloadDatabaseBotConfigVM = new ReloadDatabaseBotConfigVM();
+            DbChangeDetectionConfigVM = new DbChangeDetectionConfigVM();
         }
 
         public DbApiConnectionConfigVM? DbApiConnectionConfigVM { get { return dbApiConnectionConfigVM; } set { dbApiConnectionConfigVM = value; RaisePropertyChanged(); } }
 
         public DiscordBotConfigVM? DiscordBotConfigVM { get { return discordBotConfigVM; } set { discordBotConfigVM = value; RaisePropertyChanged(); } }
 
-        public ReloadDatabaseBotConfigVM? ReloadDatabaseBotConfigVM { get { return reloadDatabaseBotConfigVM; } set { reloadDatabaseBotConfigVM = value; RaisePropertyChanged(); } }
+        public DbChangeDetectionConfigVM? DbChangeDetectionConfigVM { get { return dbChangeDetectionConfigVM; } set { dbChangeDetectionConfigVM = value; RaisePropertyChanged(); } }
     }
 }
