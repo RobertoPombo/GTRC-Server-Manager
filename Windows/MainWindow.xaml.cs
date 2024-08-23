@@ -1,9 +1,7 @@
 ﻿using System.ComponentModel;
-using System.IO;
 using System.Windows;
 using System.Windows.Media;
 
-using GTRC_Basics;
 using GTRC_Database_Client.Responses;
 using GTRC_Database_Client;
 using GTRC_WPF;
@@ -21,10 +19,10 @@ namespace GTRC_Server_Bot.Windows
             UpdateThemeColors();
             DiscordCommands.DiscordBot.EnsureIsRunning();
             InitializeComponent();
-            Width = GlobalWinValues.screenWidth * 0.3;
-            Height = GlobalWinValues.screenHeight * 0.135;
-            Left = GlobalWinValues.screenWidth * 0.005;
-            Top = GlobalWinValues.screenWidth * 0.01 + GlobalWinValues.screenHeight * 0.07;
+            Width = 580;
+            Height = 125;
+            Left = 10;
+            Top = 2 * 10 + 195;
             Closing += CloseWindow;
             DbApiConnectionConfigVM.ConfirmApiConnectionEstablished += UpdateThemeColors;
         }

@@ -11,21 +11,21 @@ using GTRC_Server_Basics.Discord;
 
 namespace GTRC_Server_Bot.Scripts
 {
-    public class RegistrationsReport
+    public static class RegistrationsReport
     {
-        private static readonly string pathPrefix = GlobalValues.DataDirectory + "list entries - seasonId ";
+        private static readonly string pathPrefix = GlobalValues.DbChangeDetectionDirectory + "entries season ";
         private static readonly string pathSuffix = ".json";
 
-        private int seasonId = GlobalValues.NoId;
-        private List<Entry> currentEntries = [];
-        private string path { get { return pathPrefix + seasonId.ToString() + pathSuffix; } }
+        private static int seasonId = GlobalValues.NoId;
+        private static List<Entry> currentEntries = [];
+        private static string path { get { return pathPrefix + seasonId.ToString() + pathSuffix; } }
 
-        public RegistrationsReport()
+        static RegistrationsReport()
         {
             LoadListEntries();
         }
 
-        public async Task UpdateListEntries(Season season)
+        public static async Task UpdateListEntries(Season season)
         {
             seasonId = season.Id;
             LoadListEntries();
@@ -52,7 +52,7 @@ namespace GTRC_Server_Bot.Scripts
             GlobalValues.CurrentLogText = "Registration report sent.";
         }
 
-        private void LoadListEntries()
+        private static void LoadListEntries()
         {
             if (!File.Exists(path)) { File.WriteAllText(path, JsonConvert.SerializeObject(new List<Entry>(), Formatting.Indented), Encoding.Unicode); }
             try
@@ -63,7 +63,7 @@ namespace GTRC_Server_Bot.Scripts
             catch { GlobalValues.CurrentLogText = "Load list of registrations failed!"; }
         }
 
-        private void SaveListEntries()
+        private static void SaveListEntries()
         {
             string text = JsonConvert.SerializeObject(currentEntries, Formatting.Indented);
             File.WriteAllText(path, text, Encoding.Unicode);

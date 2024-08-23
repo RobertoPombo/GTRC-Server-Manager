@@ -15,9 +15,8 @@ namespace GTRC_Server_Bot.ViewModels
         private static readonly Random random = new();
 
         private ReloadDatabaseBotConfig selected = new();
-        private RegistrationsReport registrationsReport = new();
         private StateBackgroundWorker state = StateBackgroundWorker.Off;
-        private int timeRemaining = 0;
+        private int timeRemainingSec = 0;
         private bool isRunning = false;
         private int waitQueueCount = 0;
         private BackgroundWorker backgroundWorker = new() { WorkerSupportsCancellation = true };
@@ -49,7 +48,7 @@ namespace GTRC_Server_Bot.ViewModels
             set
             {
                 selected.IntervallMin = value;
-                timeRemaining = (ushort)(IntervallMin * 60);
+                timeRemainingSec = IntervallMin * 60;
                 TimeRemaining = string.Empty;
                 RaisePropertyChanged();
             }
@@ -64,7 +63,7 @@ namespace GTRC_Server_Bot.ViewModels
                 RaisePropertyChanged();
                 if (IsActive && State == StateBackgroundWorker.Off) { State = StateBackgroundWorker.On; }
                 else if (!IsActive && State == StateBackgroundWorker.On) { State = StateBackgroundWorker.Off; }
-                timeRemaining = (ushort)(IntervallMin * 60);
+                timeRemainingSec = IntervallMin * 60;
                 TimeRemaining = string.Empty;
             }
         }
@@ -94,12 +93,7 @@ namespace GTRC_Server_Bot.ViewModels
 
         public string TimeRemaining
         {
-            get
-            {
-                if (timeRemaining > 2 * 60 * 60) { return ((int)Math.Ceiling((double)timeRemaining / (60 * 60))).ToString() + " h"; }
-                else if (timeRemaining > 2 * 60) { return ((int)Math.Ceiling((double)timeRemaining / 60)).ToString() + " min"; }
-                else { return timeRemaining.ToString() + " sec"; }
-            }
+            get { return GTRC_Basics.Scripts.TimeRemaining2String(timeRemainingSec); }
             set { RaisePropertyChanged(); }
         }
 
@@ -110,12 +104,12 @@ namespace GTRC_Server_Bot.ViewModels
                 Thread.Sleep(1000);
                 if (IsActive)
                 {
-                    timeRemaining -= 1;
+                    timeRemainingSec -= 1;
                     TimeRemaining = string.Empty;
-                    if (timeRemaining == 0)
+                    if (timeRemainingSec == 0)
                     {
                         TriggerReloadDatabase();
-                        timeRemaining = (ushort)(IntervallMin * 60);
+                        timeRemainingSec = IntervallMin * 60;
                     }
                 }
             }
@@ -133,7 +127,7 @@ namespace GTRC_Server_Bot.ViewModels
             IsRunning = true;
             WaitQueueCount--;
             DbApiListResponse<Season> respSea = await DbApi.DynCon.Season.GetAll();
-            foreach (Season season in respSea.List) { await registrationsReport.UpdateListEntries(season); }
+            foreach (Season season in respSea.List) { await RegistrationsReport.UpdateListEntries(season); }
             IsRunning = false;
         }
 
