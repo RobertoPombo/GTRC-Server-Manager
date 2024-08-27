@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel;
+using System.Net;
 using System.Windows.Media;
 
+using GTRC_Basics;
 using GTRC_Basics.Models;
 using GTRC_Database_Client;
 using GTRC_Database_Client.Responses;
@@ -126,8 +128,21 @@ namespace GTRC_Server_Bot.ViewModels
             while (IsRunning) { Thread.Sleep(200 + random.Next(100)); }
             IsRunning = true;
             WaitQueueCount--;
-            DbApiListResponse<Season> respSea = await DbApi.DynCon.Season.GetAll();
-            foreach (Season season in respSea.List) { await RegistrationsReport.UpdateListEntries(season); }
+            List<Season> listSeasons = (await DbApi.DynCon.Season.GetAll()).List;
+            foreach (Season season in listSeasons) { await RegistrationsReport.UpdateListEntries(season); }
+            List<Series> listSeries = (await DbApi.DynCon.Series.GetAll()).List;
+            foreach (Series series in listSeries)
+            {
+                DbApiObjectResponse<Season> respObjSea = await DbApi.DynCon.Season.GetCurrent(series.Id);
+                if (respObjSea.Status == HttpStatusCode.OK)
+                {
+                    DbApiObjectResponse<Event> respObjEve = await DbApi.DynCon.Event.GetNext(respObjSea.Object.Id);
+                    if (respObjSea.Status == HttpStatusCode.OK)
+                    {
+                        await ServerUpdate.ExportEntrylistJson(respObjEve.Object, GlobalValues.ServerDirectory + respObjEve.Object.Name + "\\");
+                    }
+                }
+            }
             IsRunning = false;
         }
 
