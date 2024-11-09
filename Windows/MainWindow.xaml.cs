@@ -22,7 +22,7 @@ namespace GTRC_Server_Bot.Windows
             Width = 580;
             Height = 125;
             Left = 10;
-            Top = 2 * 10 + 195;
+            Top = 2 * 10 + 230;
             Closing += CloseWindow;
             DbApiConnectionConfigVM.ConfirmApiConnectionEstablished += UpdateThemeColors;
         }
