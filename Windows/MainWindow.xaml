@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:GTRC_Server_Bot.Windows"
         xmlns:viewModel="clr-namespace:GTRC_Server_Bot.ViewModels"
         mc:Ignorable="d"
-        Title="GTRC Server Bot"
+        Title="GTRC Server Manager"
         Background="{DynamicResource color1}"
         Icon="/icon.ico"
         FontFamily="{StaticResource Font_GTRC}" FontStyle="Normal" FontWeight="Regular"
