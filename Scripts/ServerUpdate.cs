@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Net;
 
 using GTRC_Basics;
 using GTRC_Basics.Models;
@@ -16,15 +18,18 @@ namespace GTRC_Server_Bot.Scripts
     {
         private static readonly string AdminRoleName = "Rennleitung";
 
+        private static List<Session> allSessions = [];
         private static List<Session> upcomingSessions = [];
 
         public static async Task Update(ServerManagerConfig serverManagerConfig)
         {
+            allSessions = (await DbApi.DynCon.Session.GetAll()).List;
+            allSessions = GTRC_Basics.Scripts.SortByDate(allSessions);
             await SyncServerList();
             if (MainVM.Instance?.ServerSheduleVM is not null)
             {
-                await UpdateResultsFolders();
-                await SyncSessionLists(serverManagerConfig);
+                UpdateResultsFolders();
+                SyncSessionLists(serverManagerConfig);
                 await UpdateServerShedules(serverManagerConfig);
                 CheckForRestrictedPorts(serverManagerConfig);
                 await UpdateServerFolders();
@@ -88,10 +93,8 @@ namespace GTRC_Server_Bot.Scripts
             serverShedule.Sessions.RemoveAt(sessionNr);   // Noch nicht gestartete Sessions aus "falscher" Sim entfernen
         }
 
-        private static async Task SyncSessionLists(ServerManagerConfig serverManagerConfig)
+        private static void SyncSessionLists(ServerManagerConfig serverManagerConfig)
         {
-            List<Session> allSessions = (await DbApi.DynCon.Session.GetAll()).List;
-            allSessions = GTRC_Basics.Scripts.SortByDate(allSessions);
             foreach (Session session in allSessions)
             {
                 if (SessionFullDto.GetEndDate(session) > DateTime.UtcNow)                                               // Session noch nicht vorbei
@@ -237,18 +240,63 @@ namespace GTRC_Server_Bot.Scripts
 
         private static async Task UpdateServerFolders()
         {
+            List<Server> listServers = (await DbApi.DynCon.Server.GetAll()).List;
+            DirectoryInfo serverDirectoryInfo = new(GlobalValues.ServerDirectory);
+            DirectoryInfo[] serverFolders = serverDirectoryInfo.GetDirectories();
+
             //Existierende Ordner ggf. umbenennen
+            int renameCount = 0;
+            foreach (DirectoryInfo serverFolder in serverFolders)
+            {
+                bool doesExist = false;
+                foreach (Server server in listServers)
+                {
+                    if (server.ToString() == serverFolder.Name) { doesExist = true; break; }
+                }
+                if (!doesExist)
+                {
+                    renameCount += 1;
+                    string newPath = GlobalValues.ServerDirectory + "#delete #" + renameCount.ToString();
+                    if (serverFolder.FullName != newPath)
+                    {
+                        try { Directory.Move(serverFolder.FullName, newPath); }
+                        catch { }
+                    }
+                }
+            }
 
             //Fehlende Ordner erstellen
+            foreach (Server server in listServers)
+            {
+                string path = GlobalValues.ServerDirectory + server.ToString();
+                if (!Directory.Exists(path)) { try { Directory.CreateDirectory(path); } catch { } }
 
-            //Entrylist, Bop, Event, etc schreiben
+                //Entrylist, Bop, Event, etc schreiben
+            }
         }
 
-        private static async Task UpdateResultsFolders()
+        private static void UpdateResultsFolders()
         {
-            //Existierende Ordner ggf. umbenennen
-
             //Fehlende Ordner erstellen
+            List<string> listPaths = [];
+            Dictionary<(int, SessionType), int> dictSessionTypeCount = [];
+            foreach (Session session in allSessions)
+            {
+                if (dictSessionTypeCount.ContainsKey((session.EventId, session.SessionType))) { dictSessionTypeCount[(session.EventId, session.SessionType)] += 1; }
+                else { dictSessionTypeCount[(session.EventId, session.SessionType)] = 1; }
+                string path = session.Event.Season.Series.Name + "\\" + session.Event.Season.Name + "\\" + session.Event.Name + "\\" + session.SessionType.ToString() + " #" +
+                    dictSessionTypeCount[(session.EventId, session.SessionType)].ToString() + " - " + session.ServerName + " (" +
+                    GTRC_Basics.Scripts.Date2String(SessionFullDto.GetStartDate(session), "DD-MM-YY hh-mm") + " - " + GTRC_Basics.Scripts.Date2String(SessionFullDto.GetEndDate(session), "DD-MM-YY hh-mm") + ")";
+                path = GTRC_Basics.Scripts.PathRemoveBlacklistedChars(path);
+                path = GlobalValues.ResultsDirectory + path.Replace("  ", " ");
+                listPaths.Add(path);
+                if (!Directory.Exists(path)) { try { Directory.CreateDirectory(path); } catch { } }
+            }
+
+            //Existierende Ordner ggf. umbenennen
+            DirectoryInfo resultsDirectoryInfo = new(GlobalValues.ResultsDirectory);
+            DirectoryInfo[] resultsFolders = resultsDirectoryInfo.GetDirectories();
+
         }
 
         public static async Task ExportEntrylistJson(Event _event, string path) //sollte Session sein todo temp, wirkt sich auf ForceEntrylist, ForceDriverInfo aus

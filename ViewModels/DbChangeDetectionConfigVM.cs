@@ -131,7 +131,7 @@ namespace GTRC_Server_Bot.ViewModels
             _ = ServerUpdate.Update(MainVM.Instance?.ServerManagerConfigVM?.Selected ?? new());
             List<Season> listSeasons = (await DbApi.DynCon.Season.GetAll()).List;
             foreach (Season season in listSeasons) { await RegistrationsReport.UpdateListEntries(season); }
-            List<Series> listSeries = (await DbApi.DynCon.Series.GetAll()).List;
+            /*List<Series> listSeries = (await DbApi.DynCon.Series.GetAll()).List;
             foreach (Series series in listSeries)
             {
                 DbApiObjectResponse<Season> respObjSea = await DbApi.DynCon.Season.GetCurrent(series.Id);
@@ -143,7 +143,7 @@ namespace GTRC_Server_Bot.ViewModels
                         await ServerUpdate.ExportEntrylistJson(respObjEve.Object, GlobalValues.ServerDirectory + respObjEve.Object.Name + "\\");
                     }
                 }
-            }
+            }*/
             IsRunning = false;
         }
 
