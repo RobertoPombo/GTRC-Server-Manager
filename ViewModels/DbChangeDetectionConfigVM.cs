@@ -128,6 +128,7 @@ namespace GTRC_Server_Bot.ViewModels
             while (IsRunning) { Thread.Sleep(200 + random.Next(100)); }
             IsRunning = true;
             WaitQueueCount--;
+            _ = ServerUpdate.Update(MainVM.Instance?.ServerManagerConfigVM?.Selected ?? new());
             List<Season> listSeasons = (await DbApi.DynCon.Season.GetAll()).List;
             foreach (Season season in listSeasons) { await RegistrationsReport.UpdateListEntries(season); }
             List<Series> listSeries = (await DbApi.DynCon.Series.GetAll()).List;

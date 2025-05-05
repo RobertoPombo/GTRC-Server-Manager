@@ -6,12 +6,250 @@ using GTRC_Basics.Models.DTOs;
 using GTRC_Basics.SimModels;
 using GTRC_Database_Client;
 using GTRC_Database_Client.Responses;
+using GTRC_Server_Bot.Configs;
+using GTRC_Server_Bot.Models;
+using GTRC_Server_Bot.ViewModels;
 
 namespace GTRC_Server_Bot.Scripts
 {
     public class ServerUpdate
     {
         private static readonly string AdminRoleName = "Rennleitung";
+
+        private static List<Session> upcomingSessions = [];
+
+        public static async Task Update(ServerManagerConfig serverManagerConfig)
+        {
+            await SyncServerList();
+            if (MainVM.Instance?.ServerSheduleVM is not null)
+            {
+                await UpdateResultsFolders();
+                await SyncSessionLists(serverManagerConfig);
+                await UpdateServerShedules(serverManagerConfig);
+                CheckForRestrictedPorts(serverManagerConfig);
+                await UpdateServerFolders();
+            }
+        }
+
+        private static async Task SyncServerList()
+        {
+            if (MainVM.Instance?.ServerSheduleVM is not null)
+            {
+                List<Server> listServers = (await DbApi.DynCon.Server.GetAll()).List;
+                foreach (Server server in listServers)
+                {
+                    bool IsSynchronized = false;
+                    foreach (ServerShedule serverShedule in MainVM.Instance.ServerSheduleVM.List)
+                    {
+                        if (server.PortUdp == serverShedule.Server.PortUdp || server.PortTcp == serverShedule.Server.PortTcp)
+                        {
+                            IsSynchronized = true;
+                            serverShedule.Server = server;
+                            for (int sessionNr = serverShedule.Sessions.Count - 1; sessionNr >= 0; sessionNr--)
+                            {
+                                Session session = serverShedule.Sessions[sessionNr];
+                                if (session.Event.Season.Series.SimId != serverShedule.Server.SimId && session.PreviousSessionId == 0 && SessionFullDto.GetStartDate(session) > DateTime.UtcNow)
+                                {
+                                    RemoveSessionFromShedule(serverShedule, sessionNr);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    if (!IsSynchronized) { MainVM.Instance.ServerSheduleVM.List.Add(new() { Server = server }); }
+                }
+                for (int serverSheduleNr = MainVM.Instance.ServerSheduleVM.List.Count - 1; serverSheduleNr >= 0; serverSheduleNr--)
+                {
+                    ServerShedule serverShedule = MainVM.Instance.ServerSheduleVM.List[serverSheduleNr];
+                    bool IsSynchronized = false;
+                    foreach (Server server in listServers)
+                    {
+                        if (server.PortUdp == serverShedule.Server.PortUdp || server.PortTcp == serverShedule.Server.PortTcp)
+                        {
+                            IsSynchronized = true;
+                            break;
+                        }
+                    }
+                    if (!IsSynchronized)
+                    {
+                        serverShedule.SetOffline();
+                        MainVM.Instance.ServerSheduleVM.List.RemoveAt(serverSheduleNr);
+                    }
+                }
+            }
+        }
+
+        private static void RemoveSessionFromShedule(ServerShedule serverShedule, int sessionNr)
+        {
+            for (int nextSessionNr = serverShedule.Sessions.Count - 1; nextSessionNr >= 0; nextSessionNr--)
+            {
+                if (serverShedule.Sessions[nextSessionNr].PreviousSessionId == serverShedule.Sessions[sessionNr].Id) { RemoveSessionFromShedule(serverShedule, nextSessionNr); }     // Folgesessions der entfernten Session ebenfalls entfernen
+            }
+            serverShedule.Sessions.RemoveAt(sessionNr);   // Noch nicht gestartete Sessions aus "falscher" Sim entfernen
+        }
+
+        private static async Task SyncSessionLists(ServerManagerConfig serverManagerConfig)
+        {
+            List<Session> allSessions = (await DbApi.DynCon.Session.GetAll()).List;
+            allSessions = GTRC_Basics.Scripts.SortByDate(allSessions);
+            foreach (Session session in allSessions)
+            {
+                if (SessionFullDto.GetEndDate(session) > DateTime.UtcNow)                                               // Session noch nicht vorbei
+                {
+                    if (SessionFullDto.GetStartDate(session) < DateTime.UtcNow) { upcomingSessions.Add(session); }      // Session ist bereits gestartet
+                    else if (session.PreviousSessionId != GlobalValues.NoId || SessionFullDto.GetStartDate(session) < DateTime.UtcNow.AddHours(serverManagerConfig.SheduleLookAheadH)) { upcomingSessions.Add(session); }  // Session startet innerhalb des Look-Ahead-Zeitraums
+                }
+            }
+        }
+
+        private static async Task UpdateServerShedules(ServerManagerConfig serverManagerConfig)
+        {
+            if (MainVM.Instance?.ServerSheduleVM is not null)
+            {
+                foreach (Session session in upcomingSessions)
+                {
+                    if (!TryAppendToPreviousSession(session))
+                    {
+                        bool foundFreeServer = false;
+                        bool isSheduled = false;
+                        foreach (ServerShedule serverShedule in MainVM.Instance.ServerSheduleVM.List)
+                        {
+                            foundFreeServer = true;
+                            if (serverShedule.Server.SimId != session.Event.Season.Series.SimId) { foundFreeServer = false; }
+                            foreach (Session serverSession in serverShedule.Sessions)
+                            {
+                                if (session.Id == serverSession.Id) { isSheduled = true; break; }
+                                else
+                                {
+                                    if (GTRC_Basics.Scripts.CheckDoTimeSpansOverlap(SessionFullDto.GetStartDate(session), SessionFullDto.GetStartDate(session), SessionFullDto.GetEndDate(serverSession), SessionFullDto.GetEndDate(serverSession)))
+                                    {
+                                        foundFreeServer = false;
+                                    }
+                                    if (!serverSession.IsAllowedInterruption && SessionFullDto.GetStartDate(serverSession) < SessionFullDto.GetStartDate(session)) { foundFreeServer = false; }
+                                }
+                            }
+                            if (isSheduled) { break; }
+                            if (foundFreeServer)
+                            {
+                                serverShedule.Sessions.Add(session);
+                                break;
+                            }
+                        }
+                        if (!isSheduled && !foundFreeServer) { await CreateNewServer(session, serverManagerConfig); }
+                    }
+                }
+            }
+        }
+
+        private static bool TryAppendToPreviousSession(Session session)
+        {
+            if (session.PreviousSessionId > GlobalValues.NoId)
+            {
+                foreach (ServerShedule serverShedule in MainVM.Instance?.ServerSheduleVM?.List ?? [])
+                {
+                    foreach (Session serverSession in serverShedule.Sessions)
+                    {
+                        if (session.PreviousSessionId == serverSession.Id)
+                        {
+                            bool isSheduled = false;
+                            foreach (ServerShedule _serverShedule in MainVM.Instance?.ServerSheduleVM?.List ?? [])
+                            {
+                                foreach (Session _serverSession in _serverShedule.Sessions)
+                                {
+                                    if (session.Id == _serverSession.Id) { isSheduled = true; }
+                                }
+                            }
+                            if (!isSheduled) { serverShedule.Sessions.Add(session); }
+                            return true;
+                        }
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private static async Task CreateNewServer(Session session, ServerManagerConfig serverManagerConfig)
+        {
+            Server server = new() { PortUdp = serverManagerConfig.PortUdpMin, PortTcp = serverManagerConfig.PortTcpMin, SimId = session.Event.Season.Series.SimId };
+            ServerAddDto serverAddDto = new();
+            serverAddDto.Model2Dto(server);
+            DbApiObjectResponse<Server> respAddServer = await DbApi.DynCon.Server.Add(new() { Dto = serverAddDto });
+            if (respAddServer.Status == HttpStatusCode.AlreadyReported)
+            {
+                serverAddDto.Model2Dto(respAddServer.Object);
+                respAddServer = await DbApi.DynCon.Server.Add(new() { Dto = serverAddDto });
+            }
+            if (respAddServer.Status == HttpStatusCode.OK)
+            {
+                ServerShedule serverShedule = new() { Server = respAddServer.Object };
+                serverShedule.Sessions.Add(session);
+                MainVM.Instance?.ServerSheduleVM?.List.Add(serverShedule);
+            }
+            else
+            {
+                GlobalValues.CurrentLogText = "Server konnte nicht erstellt werden! (Udp-Port: " + respAddServer.Object.PortUdp.ToString() + ", Tcp-Port: " + respAddServer.Object.PortTcp.ToString() + ")";
+            }
+        }
+
+        private static void CheckForRestrictedPorts(ServerManagerConfig serverManagerConfig)
+        {
+            if (MainVM.Instance?.ServerSheduleVM is not null)
+            {
+                string delimiter = ",";
+                List<ushort> restrictedUdpPorts = [];
+                List<ushort> restrictedTcpPorts = [];
+                foreach (ServerShedule serverShedule in MainVM.Instance.ServerSheduleVM.List)
+                {
+                    if (serverShedule.Server.PortUdp < serverManagerConfig.PortUdpMin || serverShedule.Server.PortUdp > serverManagerConfig.PortUdpMax)
+                    {
+                        restrictedUdpPorts.Add(serverShedule.Server.PortUdp);
+                    }
+                    if (serverShedule.Server.PortTcp < serverManagerConfig.PortTcpMin || serverShedule.Server.PortTcp > serverManagerConfig.PortTcpMax)
+                    {
+                        restrictedTcpPorts.Add(serverShedule.Server.PortTcp);
+                    }
+                }
+                if (restrictedUdpPorts.Count > 0 || restrictedTcpPorts.Count > 0)
+                {
+                    string logText = string.Empty;
+                    if (restrictedUdpPorts.Count > 0)
+                    {
+                        logText += "Udp-Port";
+                        if (restrictedUdpPorts.Count > 1) { logText += "s"; }
+                        foreach (ushort port in restrictedUdpPorts) { logText += " " + port.ToString() + delimiter; }
+                    }
+                    if (restrictedUdpPorts.Count > 0 && restrictedTcpPorts.Count > 0) { logText = logText[..^delimiter.Length] + " und "; }
+                    if (restrictedTcpPorts.Count > 0)
+                    {
+                        logText += "Tcp-Port";
+                        if (restrictedTcpPorts.Count > 1) { logText += "s"; }
+                        foreach (ushort port in restrictedTcpPorts) { logText += " " + port.ToString() + delimiter; }
+                    }
+                    logText = logText[..^delimiter.Length];
+                    if (restrictedUdpPorts.Count + restrictedTcpPorts.Count < 2) { logText += " muss"; }
+                    else { logText += " müssen"; }
+                    logText += " freigegeben werden!";
+                    GlobalValues.CurrentLogText = logText;
+                }
+            }
+        }
+
+        private static async Task UpdateServerFolders()
+        {
+            //Existierende Ordner ggf. umbenennen
+
+            //Fehlende Ordner erstellen
+
+            //Entrylist, Bop, Event, etc schreiben
+        }
+
+        private static async Task UpdateResultsFolders()
+        {
+            //Existierende Ordner ggf. umbenennen
+
+            //Fehlende Ordner erstellen
+        }
 
         public static async Task ExportEntrylistJson(Event _event, string path) //sollte Session sein todo temp, wirkt sich auf ForceEntrylist, ForceDriverInfo aus
         {

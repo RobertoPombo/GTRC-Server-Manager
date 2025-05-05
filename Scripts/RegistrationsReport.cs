@@ -49,7 +49,7 @@ namespace GTRC_Server_Bot.Scripts
                     if (respObjEve.Status == HttpStatusCode.OK) { await DiscordNotifications.ShowEntrylist(respObjEve.Object); }
                 }
             }
-            GlobalValues.CurrentLogText = "Registration report sent.";
+            //GlobalValues.CurrentLogText = "Registration report sent.";
         }
 
         private static void LoadListEntries()
@@ -58,7 +58,7 @@ namespace GTRC_Server_Bot.Scripts
             try
             {
                 currentEntries = JsonConvert.DeserializeObject<List<Entry>>(File.ReadAllText(path, Encoding.Unicode)) ?? [];
-                GlobalValues.CurrentLogText = "List of registrations loaded.";
+                //GlobalValues.CurrentLogText = "List of registrations loaded.";
             }
             catch { GlobalValues.CurrentLogText = "Load list of registrations failed!"; }
         }

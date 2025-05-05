@@ -21,20 +21,30 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <ScrollViewer Margin="15" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
-            <StackPanel Grid.Row="0" Orientation="Vertical" Margin="10,0">
-                <UserControl Content="{Binding DbChangeDetectionConfigVM}"/>
-                <!--UserControl Content="{Binding ServerBotConfigVM}"/-->
-                <Canvas Width="Auto" Height="1" Background="{DynamicResource color3}" Margin="10"/>
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0">
-                    <UserControl Content="{Binding DbApiConnectionConfigVM}"/>
-                    <Canvas Width="1" Height="Auto" Background="{DynamicResource color3}" Margin="10"/>
-                    <UserControl Content="{Binding DiscordBotConfigVM}"/>
-                </StackPanel>
-                <Canvas Width="Auto" Height="1" Background="{DynamicResource color3}" Margin="10"/>
-                <!--UserControl Content="{Binding ServerListVM}"/-->
-            </StackPanel>
-        </ScrollViewer>
+        <TabControl Grid.Row="0" Style="{StaticResource TabControlStyle2}" Margin="10,0">
+            <TabItem Header="Server" Style="{StaticResource TabItemStyle}" x:Name="DBTabItem">
+                <ScrollViewer Margin="15" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
+                    <StackPanel Orientation="Vertical">
+                        <UserControl Content="{Binding DbChangeDetectionConfigVM}"/>
+                        <Canvas Width="Auto" Height="1" Background="{DynamicResource color3}" Margin="10"/>
+                        <UserControl Content="{Binding ServerSheduleVM}"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Settings" Style="{StaticResource TabItemStyle}" x:Name="SettingsTabItem">
+                <ScrollViewer Margin="15" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
+                    <StackPanel Orientation="Vertical">
+                        <UserControl Content="{Binding ServerManagerConfigVM}"/>
+                        <Canvas Width="Auto" Height="1" Background="{DynamicResource color3}" Margin="10"/>
+                        <StackPanel Orientation="Horizontal">
+                            <UserControl Content="{Binding DbApiConnectionConfigVM}"/>
+                            <Canvas Width="1" Height="Auto" Background="{DynamicResource color3}" Margin="10"/>
+                            <UserControl Content="{Binding DiscordBotConfigVM}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
         <Label Grid.Row="1" Content="{Binding CurrentLogText}"
                Style="{StaticResource LabelStyle}" Margin="15,5" Padding="0" Height="Auto"/>
     </Grid>

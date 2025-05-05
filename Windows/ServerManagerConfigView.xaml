@@ -1,0 +1,55 @@
+﻿<UserControl x:Class="GTRC_Server_Bot.Windows.ServerManagerConfigView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GTRC_Server_Bot.Windows"
+             mc:Ignorable="d">
+
+    <StackPanel Orientation="Vertical" Grid.IsSharedSizeScope="True">
+        <StackPanel Orientation="Horizontal">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition SharedSizeGroup="SettingNames"/>
+                    <ColumnDefinition Width="Auto" MinWidth="72"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Margin="5">
+                    <Button Command="{Binding SaveJsonCmd}"
+                            Style="{StaticResource SavButtonStyle}" Margin="1,5"/>
+                    <Button Command="{Binding RestoreJsonCmd}"
+                            Style="{StaticResource ResButtonStyle}" Margin="1,5"/>
+                    <Label Content="Shedule In Advance"
+                           Style="{StaticResource LabelStyle}" Margin="0" HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <Label Grid.Row="1" Grid.Column="0" Content="Min Udp Port" Style="{StaticResource LabelStyle}" Margin="5"/>
+                <Label Grid.Row="2" Grid.Column="0" Content="Max Udp Port" Style="{StaticResource LabelStyle}" Margin="5"/>
+                <Label Grid.Row="3" Grid.Column="0" Content="Min Tcp Port" Style="{StaticResource LabelStyle}" Margin="5"/>
+                <Label Grid.Row="4" Grid.Column="0" Content="Max Tcp Port" Style="{StaticResource LabelStyle}" Margin="5"/>
+
+
+                <Grid Grid.Row="0" Grid.Column="1" Margin="10,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding Selected.SheduleLookAheadH}" Style="{StaticResource TextBoxStyle}" Margin="0"/>
+                    <Label Grid.Column="1" Content="h" Style="{StaticResource LabelStyle}" Margin="1,0" HorizontalAlignment="Center"/>
+                </Grid>
+                
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Selected.PortUdpMin}" Style="{StaticResource TextBoxStyle}" Margin="10,5"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Selected.PortUdpMax}" Style="{StaticResource TextBoxStyle}" Margin="10,5"/>
+                <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Selected.PortTcpMin}" Style="{StaticResource TextBoxStyle}" Margin="10,5"/>
+                <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Selected.PortTcpMax}" Style="{StaticResource TextBoxStyle}" Margin="10,5"/>
+            </Grid>
+        </StackPanel>
+    </StackPanel>
+</UserControl>
