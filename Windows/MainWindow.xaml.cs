@@ -20,7 +20,7 @@ namespace GTRC_Server_Bot.Windows
             DiscordCommands.DiscordBot.EnsureIsRunning();
             InitializeComponent();
             Width = 580;
-            Height = 125;
+            Height = 200;
             Left = 10;
             Top = 2 * 10 + 230;
             Closing += CloseWindow;
@@ -35,13 +35,7 @@ namespace GTRC_Server_Bot.Windows
         {
             DbApiListResponse<GTRC_Basics.Models.Color> response = await DbApi.DynCon.Color.GetAll();
             List<GTRC_Basics.Models.Color> colors = response.List;
-            for (int colorNr = 0; colorNr < colors.Count; colorNr++)
-            {
-                SolidColorBrush _color = new(Color.FromArgb(colors[colorNr].Alpha, colors[colorNr].Red, colors[colorNr].Green, colors[colorNr].Blue));
-                if (colorNr < WpfColors.List.Count) { WpfColors.List[colorNr] = _color; }
-                else { WpfColors.List.Add(_color); }
-            }
-            GlobalWinValues.UpdateWpfColors(this);
+            GlobalWinValues.UpdateWpfColors(this, colors);
         }
     }
 }

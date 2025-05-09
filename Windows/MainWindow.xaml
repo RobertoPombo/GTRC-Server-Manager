@@ -7,7 +7,7 @@
         xmlns:viewModel="clr-namespace:GTRC_Server_Bot.ViewModels"
         mc:Ignorable="d"
         Title="GTRC Server Manager"
-        Background="{DynamicResource color1}"
+        Background="{DynamicResource colorBackground}"
         Icon="/icon.ico"
         FontFamily="{StaticResource Font_GTRC}" FontStyle="Normal" FontWeight="Regular"
         FontSize="13">
@@ -26,7 +26,7 @@
                 <ScrollViewer Margin="15" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
                     <StackPanel Orientation="Vertical">
                         <UserControl Content="{Binding DbChangeDetectionConfigVM}"/>
-                        <Canvas Width="Auto" Height="1" Background="{DynamicResource color3}" Margin="10"/>
+                        <Canvas Width="Auto" Height="1" Background="{DynamicResource colorDetail1}" Margin="10"/>
                         <UserControl Content="{Binding ServerSheduleVM}"/>
                     </StackPanel>
                 </ScrollViewer>
@@ -35,10 +35,10 @@
                 <ScrollViewer Margin="15" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
                     <StackPanel Orientation="Vertical">
                         <UserControl Content="{Binding ServerManagerConfigVM}"/>
-                        <Canvas Width="Auto" Height="1" Background="{DynamicResource color3}" Margin="10"/>
+                        <Canvas Width="Auto" Height="1" Background="{DynamicResource colorDetail1}" Margin="10"/>
                         <StackPanel Orientation="Horizontal">
                             <UserControl Content="{Binding DbApiConnectionConfigVM}"/>
-                            <Canvas Width="1" Height="Auto" Background="{DynamicResource color3}" Margin="10"/>
+                            <Canvas Width="1" Height="Auto" Background="{DynamicResource colorDetail1}" Margin="10"/>
                             <UserControl Content="{Binding DiscordBotConfigVM}"/>
                         </StackPanel>
                     </StackPanel>
