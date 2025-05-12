@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 
 using GTRC_Basics;
@@ -28,7 +27,7 @@ namespace GTRC_Server_Bot.Scripts
             await SyncServerList();
             if (MainVM.Instance?.ServerSheduleVM is not null)
             {
-                UpdateResultsFolders();
+                await UpdateResultsFolders();
                 SyncSessionLists(serverManagerConfig);
                 await UpdateServerShedules(serverManagerConfig);
                 CheckForRestrictedPorts(serverManagerConfig);
@@ -245,7 +244,6 @@ namespace GTRC_Server_Bot.Scripts
             DirectoryInfo[] serverFolders = serverDirectoryInfo.GetDirectories();
 
             //Existierende Ordner ggf. umbenennen
-            int renameCount = 0;
             foreach (DirectoryInfo serverFolder in serverFolders)
             {
                 bool doesExist = false;
@@ -253,16 +251,7 @@ namespace GTRC_Server_Bot.Scripts
                 {
                     if (server.ToString() == serverFolder.Name) { doesExist = true; break; }
                 }
-                if (!doesExist)
-                {
-                    renameCount += 1;
-                    string newPath = GlobalValues.ServerDirectory + "#delete #" + renameCount.ToString();
-                    if (serverFolder.FullName != newPath)
-                    {
-                        try { Directory.Move(serverFolder.FullName, newPath); }
-                        catch { }
-                    }
-                }
+                if (!doesExist) { DeleteFolder(GlobalValues.ServerDirectory, serverFolder); }
             }
 
             //Fehlende Ordner erstellen
@@ -275,8 +264,81 @@ namespace GTRC_Server_Bot.Scripts
             }
         }
 
-        private static void UpdateResultsFolders()
+        private static async Task UpdateResultsFolders()
         {
+            //Existierende Ordner ggf. umbenennen
+            DirectoryInfo seriesDirectoryInfo = new(GlobalValues.ResultsDirectory);
+            DirectoryInfo[] seriesFolders = seriesDirectoryInfo.GetDirectories();
+            List<Series> listSeries = (await DbApi.DynCon.Series.GetAll()).List;
+            foreach (DirectoryInfo seriesFolder in seriesFolders)
+            {
+                bool doesExistSeries = false;
+                foreach (Series series in listSeries)
+                {
+                    if (series.Name == seriesFolder.Name)
+                    {
+                        DirectoryInfo seasonDirectoryInfo = new(seriesFolder.FullName);
+                        DirectoryInfo[] seasonFolders = seasonDirectoryInfo.GetDirectories();
+                        List<Season> listSeasons = (await DbApi.DynCon.Season.GetChildObjects(typeof(Series), series.Id)).List;
+                        foreach (DirectoryInfo seasonFolder in seasonFolders)
+                        {
+                            bool doesExistSeason = false;
+                            foreach (Season season in listSeasons)
+                            {
+                                if (season.Name == seasonFolder.Name)
+                                {
+                                    DirectoryInfo eventDirectoryInfo = new(seasonFolder.FullName);
+                                    DirectoryInfo[] eventFolders = eventDirectoryInfo.GetDirectories();
+                                    List<Event> listEvents = (await DbApi.DynCon.Event.GetChildObjects(typeof(Season), season.Id)).List;
+                                    foreach (DirectoryInfo eventFolder in eventFolders)
+                                    {
+                                        bool doesExistEvent = false;
+                                        foreach (Event _event in listEvents)
+                                        {
+                                            if (_event.Name == eventFolder.Name)
+                                            {
+                                                DirectoryInfo sessionDirectoryInfo = new(eventFolder.FullName);
+                                                DirectoryInfo[] sessionFolders = sessionDirectoryInfo.GetDirectories();
+                                                List<Session> listSessions = (await DbApi.DynCon.Session.GetChildObjects(typeof(Event), _event.Id)).List;
+                                                listSessions = GTRC_Basics.Scripts.SortByDate(listSessions);
+                                                foreach (DirectoryInfo sessionFolder in sessionFolders)
+                                                {
+                                                    bool doesExistSession = false;
+                                                    Dictionary<SessionType, int> dictEventSessionTypeCount = [];
+                                                    foreach (Session session in listSessions)
+                                                    {
+                                                        if (dictEventSessionTypeCount.ContainsKey(session.SessionType)) { dictEventSessionTypeCount[session.SessionType] += 1; }
+                                                        else { dictEventSessionTypeCount[session.SessionType] = 1; }
+                                                        string sessionFolderName = session.SessionType.ToString() + " #" + dictEventSessionTypeCount[session.SessionType].ToString() + " - " + session.ServerName + " (" +
+                                                        GTRC_Basics.Scripts.Date2String(SessionFullDto.GetStartDate(session), "DD-MM-YY hh-mm") + " - " + GTRC_Basics.Scripts.Date2String(SessionFullDto.GetEndDate(session), "DD-MM-YY hh-mm") + ")";
+                                                        sessionFolderName = GTRC_Basics.Scripts.PathRemoveBlacklistedChars(sessionFolderName).Replace("  ", " ");
+                                                        if (sessionFolderName == sessionFolder.Name)
+                                                        {
+                                                            doesExistSession = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                    if (!doesExistSession) { DeleteFolder(GlobalValues.ResultsDirectory, sessionFolder); }
+                                                }
+                                                doesExistEvent = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!doesExistEvent) { DeleteFolder(GlobalValues.ResultsDirectory, eventFolder); }
+                                    }
+                                    doesExistSeason = true;
+                                    break;
+                                }
+                            }
+                            if (!doesExistSeason) { DeleteFolder(GlobalValues.ResultsDirectory, seasonFolder); }
+                        }
+                        doesExistSeries = true;
+                        break;
+                    }
+                }
+                if (!doesExistSeries) { DeleteFolder(GlobalValues.ResultsDirectory, seriesFolder); }
+            }
+
             //Fehlende Ordner erstellen
             List<string> listPaths = [];
             Dictionary<(int, SessionType), int> dictSessionTypeCount = [];
@@ -292,11 +354,20 @@ namespace GTRC_Server_Bot.Scripts
                 listPaths.Add(path);
                 if (!Directory.Exists(path)) { try { Directory.CreateDirectory(path); } catch { } }
             }
+        }
 
-            //Existierende Ordner ggf. umbenennen
-            DirectoryInfo resultsDirectoryInfo = new(GlobalValues.ResultsDirectory);
-            DirectoryInfo[] resultsFolders = resultsDirectoryInfo.GetDirectories();
-
+        public static void DeleteFolder(string basePath, DirectoryInfo folder)
+        {
+            string deletePath = basePath + "#delete#";
+            if (!Directory.Exists(deletePath)) { try { Directory.CreateDirectory(deletePath); } catch { } }
+            string newPath = deletePath + folder.Name;
+            if (basePath.Length < folder.FullName.Length) { newPath = deletePath + "\\" + folder.FullName[basePath.Length..]; }
+            if (folder.FullName != newPath && (deletePath.Length > folder.FullName.Length || folder.FullName[..deletePath.Length] != deletePath))
+            {
+                if (newPath.Length > folder.Name.Length && !Directory.Exists(newPath[..^folder.Name.Length])) { try { Directory.CreateDirectory(newPath[..^folder.Name.Length]); } catch { } }
+                try { Directory.Move(folder.FullName, newPath); }
+                catch { }
+            }
         }
 
         public static async Task ExportEntrylistJson(Event _event, string path) //sollte Session sein todo temp, wirkt sich auf ForceEntrylist, ForceDriverInfo aus
