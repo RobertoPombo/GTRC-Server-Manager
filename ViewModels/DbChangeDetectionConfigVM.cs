@@ -1,11 +1,8 @@
 ﻿using System.ComponentModel;
-using System.Net;
 using System.Windows.Media;
 
-using GTRC_Basics;
 using GTRC_Basics.Models;
 using GTRC_Database_Client;
-using GTRC_Database_Client.Responses;
 using GTRC_Server_Bot.Configs;
 using GTRC_Server_Bot.Scripts;
 using GTRC_WPF;

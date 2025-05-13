@@ -22,6 +22,8 @@
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Col2"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Col4"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Col5"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Col6"/>
                         </Grid.ColumnDefinitions>
                         <Button Grid.Row="0" Grid.Column="0" Content=">" Style="{StaticResource ButtonStyle}" Height="Auto" Margin="0" Command="{Binding ShowHideSessionsCmd}"/>
                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Server.Sim.Name}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="0"/>
@@ -41,11 +43,15 @@
                                             <ColumnDefinition Width="Auto" SharedSizeGroup="Col2"/>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto" SharedSizeGroup="Col4"/>
+                                            <ColumnDefinition Width="Auto" SharedSizeGroup="Col5"/>
+                                            <ColumnDefinition Width="Auto" SharedSizeGroup="Col6"/>
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" Text="{Binding Session.Event.Name}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="3,0"/>
                                         <TextBlock Grid.Column="1" Text="{Binding Session.SessionType}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="3,0"/>
                                         <TextBlock Grid.Column="2" Text="{Binding Session.ServerName}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="3,0"/>
                                         <TextBlock Grid.Column="3" Text="{Binding Session.DurationMin}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="3,0"/>
+                                        <TextBlock Grid.Column="4" Text="{Binding CountdownStart}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="3,0"/>
+                                        <TextBlock Grid.Column="5" Text="{Binding CountdownEnd}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="3,0"/>
                                     </Grid>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
