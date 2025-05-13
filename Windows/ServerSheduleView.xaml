@@ -6,7 +6,53 @@
              xmlns:local="clr-namespace:GTRC_Server_Bot.Windows"
              mc:Ignorable="d">
 
-    <Grid>
-        <Label Content="Bla" Style="{StaticResource LabelStyle}"/>
+    <Grid Margin="20,30,20,20" Grid.IsSharedSizeScope="True">
+        <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" ItemsSource="{Binding List}" Margin="0,0,0,50"
+                 Style="{StaticResource ListBoxStyle2}" ItemContainerStyle="{StaticResource ListBoxItemStyle2}" Focusable="False">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/> <!--erste Zeile für Server-->
+                            <RowDefinition Height="Auto"/> <!--zweite Zeile für Tabelle der Sessions-->
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Col0"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Col1"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Col2"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Col4"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Row="0" Grid.Column="0" Content=">" Style="{StaticResource ButtonStyle}" Height="Auto" Margin="0" Command="{Binding ShowHideSessionsCmd}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Server.Sim.Name}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="0"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Server.PortUdp}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="0"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding Server.PortTcp}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="0"/>
+                        <TextBlock Grid.Row="0" Grid.Column="4" Text="{Binding Server.IsOnline}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="0"/>
+                        <TextBlock Grid.Row="0" Grid.Column="5" Text="{Binding ServerSessions.Count}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="0"/>
+                        <!--Tabelle der Sessions-->
+                        <ListBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" ItemsSource="{Binding ServerSessions}" Margin="0"
+                                 Style="{StaticResource ListBoxStyle2}" ItemContainerStyle="{StaticResource ListBoxItemStyle2}" Focusable="False"
+                                 Visibility="{Binding VisibilityServerSessions}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" SharedSizeGroup="Col1"/>
+                                            <ColumnDefinition Width="Auto" SharedSizeGroup="Col2"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto" SharedSizeGroup="Col4"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Session.Event.Name}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="3,0"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Session.SessionType}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="3,0"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Session.ServerName}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="3,0"/>
+                                        <TextBlock Grid.Column="3" Text="{Binding Session.DurationMin}" Style="{StaticResource TextBlockStyle}" Height="Auto" Margin="3,0"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </UserControl>

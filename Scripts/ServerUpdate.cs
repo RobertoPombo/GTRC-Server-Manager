@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Net;
+using System.Windows;
 
 using GTRC_Basics;
 using GTRC_Basics.Models;
@@ -49,9 +50,9 @@ namespace GTRC_Server_Bot.Scripts
                         {
                             IsSynchronized = true;
                             serverShedule.Server = server;
-                            for (int sessionNr = serverShedule.Sessions.Count - 1; sessionNr >= 0; sessionNr--)
+                            for (int sessionNr = serverShedule.ServerSessions.Count - 1; sessionNr >= 0; sessionNr--)
                             {
-                                Session session = serverShedule.Sessions[sessionNr];
+                                Session session = serverShedule.ServerSessions[sessionNr].Session;
                                 if (session.Event.Season.Series.SimId != serverShedule.Server.SimId && session.PreviousSessionId == 0 && SessionFullDto.GetStartDate(session) > DateTime.UtcNow)
                                 {
                                     RemoveSessionFromShedule(serverShedule, sessionNr);
@@ -60,7 +61,7 @@ namespace GTRC_Server_Bot.Scripts
                             break;
                         }
                     }
-                    if (!IsSynchronized) { MainVM.Instance.ServerSheduleVM.List.Add(new() { Server = server }); }
+                    if (!IsSynchronized) { Application.Current.Dispatcher.Invoke(() => { MainVM.Instance.ServerSheduleVM.List.Add(new() { Server = server }); }); }
                 }
                 for (int serverSheduleNr = MainVM.Instance.ServerSheduleVM.List.Count - 1; serverSheduleNr >= 0; serverSheduleNr--)
                 {
@@ -77,7 +78,7 @@ namespace GTRC_Server_Bot.Scripts
                     if (!IsSynchronized)
                     {
                         serverShedule.SetOffline();
-                        MainVM.Instance.ServerSheduleVM.List.RemoveAt(serverSheduleNr);
+                        Application.Current.Dispatcher.Invoke(() => { MainVM.Instance.ServerSheduleVM.List.RemoveAt(serverSheduleNr); });
                     }
                 }
             }
@@ -85,11 +86,11 @@ namespace GTRC_Server_Bot.Scripts
 
         private static void RemoveSessionFromShedule(ServerShedule serverShedule, int sessionNr)
         {
-            for (int nextSessionNr = serverShedule.Sessions.Count - 1; nextSessionNr >= 0; nextSessionNr--)
-            {
-                if (serverShedule.Sessions[nextSessionNr].PreviousSessionId == serverShedule.Sessions[sessionNr].Id) { RemoveSessionFromShedule(serverShedule, nextSessionNr); }     // Folgesessions der entfernten Session ebenfalls entfernen
+            for (int nextSessionNr = serverShedule.ServerSessions.Count - 1; nextSessionNr >= 0; nextSessionNr--)
+            {   // Folgesessions der entfernten Session ebenfalls entfernen
+                if (serverShedule.ServerSessions[nextSessionNr].Session.PreviousSessionId == serverShedule.ServerSessions[sessionNr].Session.Id) { RemoveSessionFromShedule(serverShedule, nextSessionNr); }
             }
-            serverShedule.Sessions.RemoveAt(sessionNr);   // Noch nicht gestartete Sessions aus "falscher" Sim entfernen
+            Application.Current.Dispatcher.Invoke(() => { serverShedule.ServerSessions.RemoveAt(sessionNr); });   // Noch nicht gestartete Sessions aus "falscher" Sim entfernen
         }
 
         private static void SyncSessionLists(ServerManagerConfig serverManagerConfig)
@@ -118,22 +119,23 @@ namespace GTRC_Server_Bot.Scripts
                         {
                             foundFreeServer = true;
                             if (serverShedule.Server.SimId != session.Event.Season.Series.SimId) { foundFreeServer = false; }
-                            foreach (Session serverSession in serverShedule.Sessions)
+                            foreach (ServerSession serverSession in serverShedule.ServerSessions)
                             {
-                                if (session.Id == serverSession.Id) { isSheduled = true; break; }
+                                if (session.Id == serverSession.Session.Id) { isSheduled = true; break; }
                                 else
                                 {
-                                    if (GTRC_Basics.Scripts.CheckDoTimeSpansOverlap(SessionFullDto.GetStartDate(session), SessionFullDto.GetStartDate(session), SessionFullDto.GetEndDate(serverSession), SessionFullDto.GetEndDate(serverSession)))
+                                    if (GTRC_Basics.Scripts.CheckDoTimeSpansOverlap(SessionFullDto.GetStartDate(session), SessionFullDto.GetStartDate(session),
+                                        SessionFullDto.GetEndDate(serverSession.Session), SessionFullDto.GetEndDate(serverSession.Session)))
                                     {
                                         foundFreeServer = false;
                                     }
-                                    if (!serverSession.IsAllowedInterruption && SessionFullDto.GetStartDate(serverSession) < SessionFullDto.GetStartDate(session)) { foundFreeServer = false; }
+                                    if (!serverSession.Session.IsAllowedInterruption && SessionFullDto.GetStartDate(serverSession.Session) < SessionFullDto.GetStartDate(session)) { foundFreeServer = false; }
                                 }
                             }
                             if (isSheduled) { break; }
                             if (foundFreeServer)
                             {
-                                serverShedule.Sessions.Add(session);
+                                Application.Current.Dispatcher.Invoke(() => { serverShedule.ServerSessions.Add(new() { Session = session }); });
                                 break;
                             }
                         }
@@ -149,19 +151,19 @@ namespace GTRC_Server_Bot.Scripts
             {
                 foreach (ServerShedule serverShedule in MainVM.Instance?.ServerSheduleVM?.List ?? [])
                 {
-                    foreach (Session serverSession in serverShedule.Sessions)
+                    foreach (ServerSession serverSession in serverShedule.ServerSessions)
                     {
-                        if (session.PreviousSessionId == serverSession.Id)
+                        if (session.PreviousSessionId == serverSession.Session.Id)
                         {
                             bool isSheduled = false;
                             foreach (ServerShedule _serverShedule in MainVM.Instance?.ServerSheduleVM?.List ?? [])
                             {
-                                foreach (Session _serverSession in _serverShedule.Sessions)
+                                foreach (ServerSession _serverSession in _serverShedule.ServerSessions)
                                 {
-                                    if (session.Id == _serverSession.Id) { isSheduled = true; }
+                                    if (session.Id == _serverSession.Session.Id) { isSheduled = true; }
                                 }
                             }
-                            if (!isSheduled) { serverShedule.Sessions.Add(session); }
+                            if (!isSheduled) { Application.Current.Dispatcher.Invoke(() => { serverShedule.ServerSessions.Add(new() { Session = session }); }); }
                             return true;
                         }
                     }
@@ -185,8 +187,8 @@ namespace GTRC_Server_Bot.Scripts
             if (respAddServer.Status == HttpStatusCode.OK)
             {
                 ServerShedule serverShedule = new() { Server = respAddServer.Object };
-                serverShedule.Sessions.Add(session);
-                MainVM.Instance?.ServerSheduleVM?.List.Add(serverShedule);
+                Application.Current.Dispatcher.Invoke(() => { serverShedule.ServerSessions.Add(new() { Session = session }); });
+                Application.Current.Dispatcher.Invoke(() => { MainVM.Instance?.ServerSheduleVM?.List.Add(serverShedule); });
             }
             else
             {
@@ -257,10 +259,21 @@ namespace GTRC_Server_Bot.Scripts
             //Fehlende Ordner erstellen
             foreach (Server server in listServers)
             {
-                string path = GlobalValues.ServerDirectory + server.ToString();
+                string path = GlobalValues.ServerDirectory + server.ToString() + "\\";
                 if (!Directory.Exists(path)) { try { Directory.CreateDirectory(path); } catch { } }
 
-                //Entrylist, Bop, Event, etc schreiben
+                //Ordnerstruktur prüfen
+                if (server.Sim.Name == "Assetto Corsa Competizione")
+                {
+                    string pathCfg = path + "cfg\\";
+                    string pathResults = path + "results\\";
+                    string pathLog = path + "log\\";
+                    string pathCfgCurrent = pathCfg + "current\\";
+                    if (!Directory.Exists(pathCfg)) { try { Directory.CreateDirectory(pathCfg); } catch { } }
+                    if (!Directory.Exists(pathResults)) { try { Directory.CreateDirectory(pathResults); } catch { } }
+                    if (!Directory.Exists(pathLog)) { try { Directory.CreateDirectory(pathLog); } catch { } }
+                    if (!Directory.Exists(pathCfgCurrent)) { try { Directory.CreateDirectory(pathCfgCurrent); } catch { } }
+                }
             }
         }
 
