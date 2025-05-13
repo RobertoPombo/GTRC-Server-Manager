@@ -11,6 +11,8 @@ namespace GTRC_Server_Bot.Models
         private BackgroundWorker backgroundWorker = new() { WorkerSupportsCancellation = true };
         private bool isActive = true;
         private Session session = new();
+        private string countdownStart = string.Empty;
+        private string countdownEnd = string.Empty;
 
         public ServerSession(Session _session)
         {
@@ -23,8 +25,6 @@ namespace GTRC_Server_Bot.Models
             set
             {
                 session = value;
-                CountdownStartSec = (int)Math.Round((SessionFullDto.GetStartDate(session) - DateTime.UtcNow).TotalSeconds, 0);
-                CountdownEndSec = (int)Math.Round((SessionFullDto.GetEndDate(session) - DateTime.UtcNow).TotalSeconds, 0);
                 //while (!isActive) { Thread.Sleep(1000); }
                 if (!backgroundWorker.IsBusy)
                 {
@@ -34,38 +34,30 @@ namespace GTRC_Server_Bot.Models
             }
         }
 
-        public int CountdownStartSec { get; set; } = 0;
-        public int CountdownEndSec { get; set; } = 0;
+        public DateTime StartDate { get; set; } = DateTime.UtcNow;
+        public DateTime EndDate { get; set; } = DateTime.UtcNow;
 
-        public string CountdownStart { get { return GTRC_Basics.Scripts.TimeRemaining2StringPrecise(CountdownStartSec, delimiter: ":"); } }
-        public string CountdownEnd { get { return GTRC_Basics.Scripts.TimeRemaining2StringPrecise(CountdownEndSec, delimiter: ":"); } }
+        public int CountdownStartSec { get { return (int)Math.Max(Math.Round((StartDate - DateTime.UtcNow).TotalSeconds, 0), 0); } }
+        public int CountdownEndSec { get { return (int)Math.Max(Math.Round((EndDate - DateTime.UtcNow).TotalSeconds, 0), 0); } }
+
+        public string CountdownStart { get { return countdownStart; } set { countdownStart = value; RaisePropertyChanged(); } }
+        public string CountdownEnd { get { return countdownEnd; } set { countdownEnd = value; RaisePropertyChanged(); } }
 
         public void LoopRefreshCountdowns(object? sender, DoWorkEventArgs e)
         {
             while (isActive)
             {
-                Thread.Sleep(1000);
-                if (CountdownStartSec != 0)
+                Thread.Sleep(500);
+                CountdownStart = GTRC_Basics.Scripts.TimeRemaining2StringPrecise(CountdownStartSec, delimiter: ":");
+                CountdownEnd = GTRC_Basics.Scripts.TimeRemaining2StringPrecise(CountdownEndSec, delimiter: ":");
+                RaisePropertyChanged(nameof(CountdownEnd));
+                if (CountdownStartSec == 0)
                 {
-                    CountdownStartSec -= 1;
-                    RaisePropertyChanged(nameof(CountdownStart));
-                    if (CountdownStartSec <= 0)
-                    {
-                        CountdownStartSec = 0;
-                        RaisePropertyChanged(nameof(CountdownStart));
-                        // todo not yet implemented
-                    }
+                    // todo not yet implemented
                 }
-                if (CountdownEndSec != 0)
+                if (CountdownEndSec == 0)
                 {
-                    CountdownEndSec -= 1;
-                    RaisePropertyChanged(nameof(CountdownEnd));
-                    if (CountdownEndSec <= 0)
-                    {
-                        CountdownEndSec = 0;
-                        RaisePropertyChanged(nameof(CountdownEnd));
-                        // todo not yet implemented
-                    }
+                    // todo not yet implemented
                 }
             }
             isActive = true;

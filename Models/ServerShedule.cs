@@ -2,6 +2,8 @@
 using System.Windows;
 
 using GTRC_Basics.Models;
+using GTRC_Basics.Models.DTOs;
+using GTRC_Database_Client;
 using GTRC_WPF;
 
 namespace GTRC_Server_Bot.Models
@@ -31,6 +33,20 @@ namespace GTRC_Server_Bot.Models
         }
 
         public Visibility VisibilityServerSessions { get { return visibilityServerSessions; } set { visibilityServerSessions = value; RaisePropertyChanged(); } }
+
+        public async Task UpdateServerSessions()
+        {
+            foreach (ServerSession serverSession in ServerSessions)
+            {
+                Session firstSession = serverSession.Session;
+                Session lastSession = serverSession.Session;
+                List<Session> relatedSessions = (await DbApi.DynCon.Session.GetRelated(serverSession.Session.Id)).List;
+                relatedSessions = GTRC_Basics.Scripts.SortByDate(relatedSessions);
+                if (relatedSessions.Count > 0) { firstSession = relatedSessions[0]; lastSession = relatedSessions[^1]; }
+                serverSession.StartDate = SessionFullDto.GetStartDate(firstSession);
+                serverSession.EndDate = SessionFullDto.GetEndDate(lastSession);
+            }
+        }
 
         public void SetOnline()
         {

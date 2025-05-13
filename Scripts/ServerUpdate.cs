@@ -33,6 +33,7 @@ namespace GTRC_Server_Bot.Scripts
                 await UpdateServerShedules(serverManagerConfig);
                 CheckForRestrictedPorts(serverManagerConfig);
                 await UpdateServerFolders();
+                UpdateServerSessions();
             }
         }
 
@@ -381,6 +382,14 @@ namespace GTRC_Server_Bot.Scripts
                 if (newPath.Length > folder.Name.Length && !Directory.Exists(newPath[..^folder.Name.Length])) { try { Directory.CreateDirectory(newPath[..^folder.Name.Length]); } catch { } }
                 try { Directory.Move(folder.FullName, newPath); }
                 catch { }
+            }
+        }
+
+        private static void UpdateServerSessions()
+        {
+            foreach (ServerShedule serverShedule in MainVM.Instance?.ServerSheduleVM?.List ?? [])
+            {
+                _ = serverShedule.UpdateServerSessions();
             }
         }
 
