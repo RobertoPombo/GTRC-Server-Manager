@@ -39,6 +39,7 @@ namespace GTRC_Server_Bot.Models
 
         public void SetOffline()
         {
+            foreach (ServerSession serverSession in ServerSessions) { serverSession.StopBackgroundWorker(); }
             //todo not yet implemented
         }
 

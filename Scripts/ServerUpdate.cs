@@ -90,6 +90,7 @@ namespace GTRC_Server_Bot.Scripts
             {   // Folgesessions der entfernten Session ebenfalls entfernen
                 if (serverShedule.ServerSessions[nextSessionNr].Session.PreviousSessionId == serverShedule.ServerSessions[sessionNr].Session.Id) { RemoveSessionFromShedule(serverShedule, nextSessionNr); }
             }
+            serverShedule.ServerSessions[sessionNr].StopBackgroundWorker();
             Application.Current.Dispatcher.Invoke(() => { serverShedule.ServerSessions.RemoveAt(sessionNr); });   // Noch nicht gestartete Sessions aus "falscher" Sim entfernen
         }
 
@@ -135,7 +136,7 @@ namespace GTRC_Server_Bot.Scripts
                             if (isSheduled) { break; }
                             if (foundFreeServer)
                             {
-                                Application.Current.Dispatcher.Invoke(() => { serverShedule.ServerSessions.Add(new() { Session = session }); });
+                                Application.Current.Dispatcher.Invoke(() => { serverShedule.ServerSessions.Add(new(session)); });
                                 break;
                             }
                         }
@@ -163,7 +164,7 @@ namespace GTRC_Server_Bot.Scripts
                                     if (session.Id == _serverSession.Session.Id) { isSheduled = true; }
                                 }
                             }
-                            if (!isSheduled) { Application.Current.Dispatcher.Invoke(() => { serverShedule.ServerSessions.Add(new() { Session = session }); }); }
+                            if (!isSheduled) { Application.Current.Dispatcher.Invoke(() => { serverShedule.ServerSessions.Add(new(session)); }); }
                             return true;
                         }
                     }
@@ -187,7 +188,7 @@ namespace GTRC_Server_Bot.Scripts
             if (respAddServer.Status == HttpStatusCode.OK)
             {
                 ServerShedule serverShedule = new() { Server = respAddServer.Object };
-                Application.Current.Dispatcher.Invoke(() => { serverShedule.ServerSessions.Add(new() { Session = session }); });
+                Application.Current.Dispatcher.Invoke(() => { serverShedule.ServerSessions.Add(new(session)); });
                 Application.Current.Dispatcher.Invoke(() => { MainVM.Instance?.ServerSheduleVM?.List.Add(serverShedule); });
             }
             else
